@@ -1,14 +1,16 @@
-# project name
 TARGET   = dwmstatus
 
-# compiler and compiler flags
-CC       = gcc
-CFLAGS   = -std=c99 -Iinc -D_GLIBCXX_DEBUG -D_GNU_SOURCE -g -I/usr/X11R6/include
-# -fsanitize=address -fsanitize=undefined
+GENFLAGS = -ansi -Wall -Wextra -Werror -Wpedantic 
+GDBFLAGS = -g -D_GLIBCXX_DEBUG -D_GNU_SOURCE
+SANFLAGS = -fsanitize=undefined -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins
 
-# linker and linker flags
-LINKER   = gcc
-LFLAGS   = -std=c99 -Iinc -D_GLIBCXX_DEBUG -D_GNU_SOURCE -g -L/usr/lib -L/usr/X11R6/lib -lX11 -lasound -lc
+CC       = clang
+CINCS    = -I./inc -I/usr/X11R6/include
+CFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(SANFLAGS) $(CINCS) -O1
+
+LINKER   = clang
+LINCS    = -Iinc -L/usr/lib -L/usr/X11R6/lib -lX11 -lasound -lc 
+LFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(SANFLAGS) $(LINCS) 
 
 SRCDIR   = src
 INCDIR   = inc
@@ -45,6 +47,8 @@ remove: clean
 
 .PHONY: install
 install:
+	@pkill -x $(TARGET) || true
+	@sleep 1
 	@cp ./bin/$(TARGET) /usr/local/bin/
 	@echo "*****EXECUTABLE INSTALLED*****"  
 

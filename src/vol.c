@@ -1,27 +1,71 @@
-#include <alsa/asoundlib.h>
-#include <alsa/control.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 
 char* getVol(void) {
     int vol;
-    char* volBuf;
-    snd_hctl_elem_t *elem;
-    snd_hctl_t *hctl;
-    snd_ctl_elem_id_t *id;
-    snd_ctl_elem_value_t *control;
-    snd_hctl_open(&hctl, "sysdefault:CARD=Generic_1", 1);
-    snd_hctl_load(hctl);
-    snd_ctl_elem_id_alloca(&id);
-    snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_MIXER);
-    snd_ctl_elem_id_set_name(id, "Master Playback Volume");
-    elem = snd_hctl_find_elem(hctl, id);
-    snd_ctl_elem_value_alloca(&control);
-    snd_ctl_elem_value_set_id(control, id);
-    snd_hctl_elem_read(elem, control);
-    vol = (int)snd_ctl_elem_value_get_integer(control,0);
-    snd_hctl_close(hctl);
+    char* mute;
+    char* buf;
+    int bufSize = 255;
+    FILE* fp;
 
-    volBuf = malloc(255 * sizeof(char));
-    sprintf(volBuf, "%d", vol);
-    return volBuf;
+    buf = malloc(bufSize * sizeof(char));
+    mute = malloc(bufSize * sizeof(char));
+
+    if (buf == NULL) {
+        fprintf(stderr, "%s:%d Error: buffer not allocated successfully\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    if (mute == NULL) {
+        fprintf(stderr, "%s:%d Error: mute buffer not allocated successfully\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    fp = popen("pactl get-sink-volume @DEFAULT_SINK@", "r");
+    if (fp == NULL) { 
+        fprintf(stderr, "%s:%d Error: get volume command failed\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    /* ignore chars until / found, then start scanning */
+    if (fscanf(fp, "%*[^/]/%d", &vol) != 1) {
+        fprintf(stderr, "%s:%d Error: failed to find volume when scanning\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    pclose(fp);
+
+    fp = popen("pactl get-sink-mute @DEFAULT_SINK@", "r");
+    if (fp == NULL) { 
+        fprintf(stderr, "%s:%d Error: get mute command failed\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    if (fscanf(fp, "Mute: %s", mute) != 1) {
+        fprintf(stderr, "%s:%d Error: failed to find mute when scanning\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    pclose(fp);
+
+    if (strcmp(mute, "no") == 0) {
+        if (snprintf(buf, bufSize, "unmuted %d", vol) < 0) {
+            fprintf(stderr, "%s:%d Error: failed to write string to buf\n", __FILE__, __LINE__);
+            exit(1);
+        }
+    } else if (strcmp(mute, "yes") == 0) {
+        if (snprintf(buf, bufSize, "muted %d", vol) < 0) {
+            fprintf(stderr, "%s:%d Error: failed to write string to buf\n", __FILE__, __LINE__);
+            exit(1);
+        }
+    } else {
+        fprintf(stderr, "%s:%d Error: mute not 1 or 0\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    return buf;
 }
+
 
