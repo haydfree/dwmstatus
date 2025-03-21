@@ -1,49 +1,52 @@
-# See LICENSE file for copyright and license details.
+# project name
+TARGET   = dwmstatus
 
-include config.mk
+# compiler and compiler flags
+CC       = gcc
+CFLAGS   = -std=c99 -Iinc -D_GLIBCXX_DEBUG -D_GNU_SOURCE -g -I/usr/X11R6/include
+# -fsanitize=address -fsanitize=undefined
 
-SRC = ${NAME}.c
-OBJ = ${SRC:.c=.o}
+# linker and linker flags
+LINKER   = gcc
+LFLAGS   = -std=c99 -Iinc -D_GLIBCXX_DEBUG -D_GNU_SOURCE -g -L/usr/lib -L/usr/X11R6/lib -lX11 -lasound -lc
 
-all: options ${NAME}
+SRCDIR   = src
+INCDIR   = inc
+OBJDIR   = obj
+BINDIR   = bin
 
-options:
-	@echo ${NAME} build options:
-	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "LDFLAGS  = ${LDFLAGS}"
-	@echo "CC       = ${CC}"
+SOURCES  := $(wildcard $(SRCDIR)/*.c)
+INCLUDES := $(wildcard $(INCDIR)/*.h)
+OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+rm       = rm -f
 
-.c.o:
-	@echo CC $<
-	@${CC} -c ${CFLAGS} $<
+$(BINDIR)/$(TARGET): $(OBJECTS)
+	@$(LINKER) $(OBJECTS) $(LFLAGS) -o $@
+	@echo "*****LINKING COMPLETE*****"
 
-${OBJ}: config.mk
+$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
+	@$(CC) $(CFLAGS) -c $< -o $@
+	@echo "*****COMPILATION COMPLETE*****"
 
-${NAME}: ${OBJ}
-	@echo CC -o $@
-	@${CC} -o $@ ${OBJ} ${LDFLAGS}
+.PHONY: run
+run:
+	@./$(BINDIR)/$(TARGET)
+	@echo "*****EXECUTION COMPLETE*****"
 
+.PHONY: clean
 clean:
-	@echo cleaning
-	@rm -f ${NAME} ${OBJ} ${NAME}-${VERSION}.tar.gz
+	@$(rm) $(OBJECTS)
+	@echo "*****CLEANUP COMPLETE*****"
 
-dist: clean
-	@echo creating dist tarball
-	@mkdir -p ${NAME}-${VERSION}
-	@cp -R Makefile LICENSE config.mk \
-		${SRC} ${NAME}-${VERSION}
-	@tar -cf ${NAME}-${VERSION}.tar ${NAME}-${VERSION}
-	@gzip ${NAME}-${VERSION}.tar
-	@rm -rf ${NAME}-${VERSION}
+.PHONY: remove
+remove: clean
+	@$(rm) $(BINDIR)/$(TARGET)
+	@echo "*****EXECTUABLE REMOVED*****"
 
-install: all
-	@echo installing executable file to ${DESTDIR}${PREFIX}/bin
-	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@cp -f ${NAME} ${DESTDIR}${PREFIX}/bin
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/${NAME}
+.PHONY: install
+install:
+	@cp ./bin/$(TARGET) /usr/local/bin/
+	@echo "*****EXECUTABLE INSTALLED*****"  
 
-uninstall:
-	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
-	@rm -f ${DESTDIR}${PREFIX}/bin/${NAME}
-
-.PHONY: all options clean dist install uninstall
+.PHONY: all
+all: $(BINDIR)/$(TARGET)
