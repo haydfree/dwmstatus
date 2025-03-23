@@ -9,7 +9,7 @@ CINCS    = -I./inc -I/usr/X11R6/include
 CFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(SANFLAGS) $(CINCS) -O1
 
 LINKER   = clang
-LINCS    = -Iinc -L/usr/lib -L/usr/X11R6/lib -lX11 -lasound -lc 
+LINCS    = -I./inc -L/usr/lib -L/usr/X11R6/lib -lX11 -lasound -lc 
 LFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(SANFLAGS) $(LINCS) 
 
 SRCDIR   = src
