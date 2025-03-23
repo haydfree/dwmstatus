@@ -3,6 +3,14 @@
 #include <string.h>
 #include <stdio.h>
 
+void strTrim(char* str) {
+    size_t len;
+    len = strlen(str);
+    if (len > 0 && str[len-1] == '\n') {
+        str[len-1] = '\0';
+    }
+}
+
 char* smprintf(char *fmt, ...) {
 	va_list fmtargs;
 	char *ret;

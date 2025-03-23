@@ -5,18 +5,16 @@
 
 #include "util.h"
 
+#define BUFSIZE 255
+
 char* getBat(void) {
     FILE* fp;
     char* buf;
-    char batStatus[255];
     char* symbol;
+    char batStatus[255];
     int perc;
-    int bufSize;
-    size_t len;
 
-    bufSize = 255;
-
-    buf = malloc(bufSize * sizeof(char));
+    buf = malloc(BUFSIZE * sizeof(char));
     if (buf == NULL) {
         fprintf(stderr, "%s:%d Error: return buffer not allocated successfully\n", __FILE__, __LINE__);
         exit(1);
@@ -28,16 +26,12 @@ char* getBat(void) {
         exit(1);
     }
 
-    if (fgets(batStatus, bufSize, fp) == NULL) {
+    if (fgets(batStatus, BUFSIZE, fp) == NULL) {
         fprintf(stderr, "%s:%d Error: reading str to batStatus failed\n", __FILE__, __LINE__);
         exit(1);
     }
 
-    len = strlen(batStatus);
-    if (len > 0 && batStatus[len-1] == '\n') {
-        batStatus[len-1] = '\0';
-    }
-    
+    strTrim(batStatus);
     fclose(fp);
 
     fp = fopen("/sys/class/power_supply/BAT0/capacity", "r");
@@ -63,7 +57,7 @@ char* getBat(void) {
         symbol = "?";
     }
 
-    if (snprintf(buf, bufSize, "%s %d%%", symbol, perc) < 0) {
+    if (snprintf(buf, BUFSIZE, "%s %d%%", symbol, perc) < 0) {
         fprintf(stderr, "%s:%d Error: failed to write str to return buffer\n", __FILE__, __LINE__);
         exit(1);
     }

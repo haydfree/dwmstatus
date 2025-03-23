@@ -22,6 +22,7 @@
 #include "cpu.h"
 #include "tm.h"
 #include "mem.h"
+#include "net.h"
 
 #define REFRESH_RATE 1
 
@@ -33,6 +34,8 @@ void setStatus(char *str) {
 }
 
 int main(void) {
+    char* netSsid;
+    char* netStatus;
     char* bat;
     char* cpu;
     char* mem;
@@ -45,16 +48,20 @@ int main(void) {
 		return 1;
 	}
 
+    netSsid = getNetSsid(); 
+
 	for (;;sleep(REFRESH_RATE)) {
+        netStatus = getNetStatus();
 		bat = getBat();
 		cpu = getCpu("/sys/devices/virtual/thermal/thermal_zone0", "temp");
         mem = getMem();
         vol = getVol();
 		time = getTime("%a %Y-%m-%d %H:%M:%S", "America/Chicago");
 
-        status = smprintf(" bat: %s | cpu: %s | mem: %s | vol: %s | time: %s ", bat, cpu, mem, vol, time);
+        status = smprintf(" net: %s %s | bat: %s | cpu: %s | mem: %s | vol: %s | time: %s ", netSsid, netStatus, bat, cpu, mem, vol, time);
 		setStatus(status);
 
+        free(netStatus);
         free(bat);
         free(cpu);
         free(mem);
@@ -62,6 +69,8 @@ int main(void) {
         free(time);
         free(status);
 	}
+
+    free(netSsid);
 
 	XCloseDisplay(dpy);
 	return 0;
