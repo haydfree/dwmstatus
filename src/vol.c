@@ -4,22 +4,17 @@
 
 
 char* getVol(void) {
-    int vol;
-    char* mute;
-    char* buf;
-    int bufSize = 255;
     FILE* fp;
+    char* buf;
+    char mute[255];
+    int vol;
+    int bufSize;
+
+    bufSize = 255;
 
     buf = malloc(bufSize * sizeof(char));
-    mute = malloc(bufSize * sizeof(char));
-
     if (buf == NULL) {
         fprintf(stderr, "%s:%d Error: buffer not allocated successfully\n", __FILE__, __LINE__);
-        exit(1);
-    }
-
-    if (mute == NULL) {
-        fprintf(stderr, "%s:%d Error: mute buffer not allocated successfully\n", __FILE__, __LINE__);
         exit(1);
     }
 
