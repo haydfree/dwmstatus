@@ -51,13 +51,13 @@ char* getBat(void) {
         symbol = "=";
     } else if (strcmp(batStatus, "Charging") == 0) {
         symbol = "+";
-    } else if (strcmp(batStatus, "Not charging") == 0) {
+    } else if (strcmp(batStatus, "Discharging") == 0) {
         symbol = "-";
     } else {
         symbol = "?";
     }
 
-    if (snprintf(buf, BUFSIZE, "%s %d%%", symbol, perc) < 0) {
+    if (snprintf(buf, BUFSIZE, "%s%d%%", symbol, perc) < 0) {
         fprintf(stderr, "%s:%d Error: failed to write str to return buffer\n", __FILE__, __LINE__);
         exit(1);
     }
