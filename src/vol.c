@@ -51,7 +51,7 @@ char* getVol(void) {
             exit(1);
         }
     } else if (strcmp(mute, "yes") == 0) {
-        if (snprintf(buf, bufSize, "- %d", vol) < 0) {
+        if (snprintf(buf, bufSize, "-%d%%", vol) < 0) {
             fprintf(stderr, "%s:%d Error: failed to write string to buf\n", __FILE__, __LINE__);
             exit(1);
         }
