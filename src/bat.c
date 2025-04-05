@@ -47,7 +47,7 @@ char* getBat(void) {
 
     fclose(fp);
     
-    if (strcmp(batStatus, "Full") == 0) {
+    if (strcmp(batStatus, "Full") == 0 || strcmp(batStatus, "Not charging") == 0) {
         symbol = "=";
     } else if (strcmp(batStatus, "Charging") == 0) {
         symbol = "+";

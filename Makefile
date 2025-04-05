@@ -1,16 +1,15 @@
 TARGET   = dwmstatus
 
 GENFLAGS = -ansi -Wall -Wextra -Werror -Wpedantic 
-GDBFLAGS = -g -D_GLIBCXX_DEBUG -D_GNU_SOURCE
-SANFLAGS = -fsanitize=undefined -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins
+GDBFLAGS = -g -D_GNU_SOURCE
 
-CC       = clang
+CC       = gcc
 CINCS    = -I./inc -I/usr/X11R6/include
-CFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(SANFLAGS) $(CINCS) -O1
+CFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(CINCS)
 
-LINKER   = clang
+LINKER   = gcc
 LINCS    = -I./inc -L/usr/lib -L/usr/X11R6/lib -lX11 -lasound -lc 
-LFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(SANFLAGS) $(LINCS) 
+LFLAGS   = $(GENFLAGS) $(GDBFLAGS) $(LINCS) 
 
 SRCDIR   = src
 INCDIR   = inc

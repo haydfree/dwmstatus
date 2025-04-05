@@ -48,7 +48,7 @@ int main(void) {
 		return 1;
 	}
 
-    netSsid = getNetSsid(); 
+    netSsid = getNetSsid();
 
 	for (;;sleep(REFRESH_RATE)) {
         netStatus = getNetStatus();
@@ -58,7 +58,8 @@ int main(void) {
         vol = getVol();
 		time = getTime("%a %Y-%m-%d %H:%M:%S", "America/Chicago");
 
-        status = smprintf(" net: %s %s | bat: %s | cpu: %s | mem: %s | vol: %s | time: %s ", netSsid, netStatus, bat, cpu, mem, vol, time);
+        status = smprintf(" net: %s %s | bat: %s | cpu: %s | mem: %s | vol: %s | time: %s ", 
+            netSsid, netStatus, bat, cpu, mem, vol, time);
 		setStatus(status);
 
         free(netStatus);

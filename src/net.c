@@ -29,7 +29,7 @@ char* getNetSsid(void) {
     }
 
     strTrim(ssid);
-    fclose(fp);
+    pclose(fp);
 
     return ssid;
 }
@@ -44,7 +44,7 @@ char* getNetStatus(void) {
         exit(1);
     }
 
-    fp = fopen("/sys/class/net/wlan0/operstate", "r");
+    fp = fopen("/sys/class/net/wlp3s0/operstate", "r");
     if (fp == NULL) {
         fprintf(stderr, "%s:%d: Error: open net interface status failed\n", __FILE__, __LINE__);
         exit(1);

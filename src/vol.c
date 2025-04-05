@@ -2,61 +2,49 @@
 #include <stdio.h>
 #include <string.h>
 
+#define BUF_SIZE 255
+
 
 char* getVol(void) {
     FILE* fp;
     char* buf;
-    char mute[255];
     int vol;
-    int bufSize;
+    char mute[4];
 
-    bufSize = 255;
-
-    buf = malloc(bufSize * sizeof(char));
+    buf = malloc(BUF_SIZE * sizeof(char));
     if (buf == NULL) {
-        fprintf(stderr, "%s:%d Error: buffer not allocated successfully\n", __FILE__, __LINE__);
+        fprintf(stderr, "%s:%d Error: buf allocation failed\n", __FILE__, __LINE__);
         exit(1);
     }
 
-    fp = popen("pactl get-sink-volume @DEFAULT_SINK@", "r");
+    fp = popen("amixer get Master", "r");
     if (fp == NULL) { 
         fprintf(stderr, "%s:%d Error: get volume command failed\n", __FILE__, __LINE__);
         exit(1);
     }
 
-    /* ignore chars until / found, then start scanning */
-    if (fscanf(fp, "%*[^/]/%d", &vol) != 1) {
-        fprintf(stderr, "%s:%d Error: failed to find volume when scanning\n", __FILE__, __LINE__);
-        exit(1);
+    while (fgets(buf, BUF_SIZE, fp)) {
+        if (strstr(buf, "Mono:")) {
+            if (!sscanf(buf, "%*s %*s %*d [%d%%] [%*fdB] [%3[^]]", &vol, mute)) {
+                continue;
+            }
+        }
     }
 
     pclose(fp);
 
-    fp = popen("pactl get-sink-mute @DEFAULT_SINK@", "r");
-    if (fp == NULL) { 
-        fprintf(stderr, "%s:%d Error: get mute command failed\n", __FILE__, __LINE__);
-        exit(1);
-    }
-
-    if (fscanf(fp, "Mute: %s", mute) != 1) {
-        fprintf(stderr, "%s:%d Error: failed to find mute when scanning\n", __FILE__, __LINE__);
-        exit(1);
-    }
-
-    pclose(fp);
-
-    if (strcmp(mute, "no") == 0) {
-        if (snprintf(buf, bufSize, "+%d%%", vol) < 0) {
+    if (strcmp(mute, "on") == 0) {
+        if (snprintf(buf, BUF_SIZE, "+%d%%", vol) < 0) {
             fprintf(stderr, "%s:%d Error: failed to write string to buf\n", __FILE__, __LINE__);
             exit(1);
         }
-    } else if (strcmp(mute, "yes") == 0) {
-        if (snprintf(buf, bufSize, "-%d%%", vol) < 0) {
+    } else if (strcmp(mute, "off") == 0) {
+        if (snprintf(buf, BUF_SIZE, "-%d%%", vol) < 0) {
             fprintf(stderr, "%s:%d Error: failed to write string to buf\n", __FILE__, __LINE__);
             exit(1);
         }
     } else {
-        fprintf(stderr, "%s:%d Error: mute not 1 or 0\n", __FILE__, __LINE__);
+        fprintf(stderr, "%s:%d Error: mute not expected format\n", __FILE__, __LINE__);
         exit(1);
     }
 
