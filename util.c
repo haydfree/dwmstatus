@@ -48,6 +48,6 @@ execute_script(const char * const cmd, char * const dst, const size_t len)
 
     ret = SUCCESS;
 cleanup:
-	if (fp) { fclose(fp); }
+	if (fp) { pclose(fp); }
     return ret;
 }
