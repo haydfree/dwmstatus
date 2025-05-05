@@ -35,7 +35,7 @@ get_net(char * const dst, const size_t len)
 
 	if (strcmp(net_st, "active") == 0) { strlcpy(net_st, "+", SMALL_BUF_SIZE); }
 	else if (strcmp(net_st, "inactive") == 0) { strlcpy(net_st, "-", SMALL_BUF_SIZE); }
-	else { /* keep status same */ }
+	else { /* leave status unchanged */ }
 	if (snprintf(dst, len, "%s%s", net_st, net_id) < 0) { goto cleanup; }
 
     ret = SUCCESS;
@@ -63,6 +63,8 @@ get_bat(char * const dst, const size_t len)
 	if (cur_len+1 >= len) { goto cleanup; }
 
 	if (strcmp(bat_st, "1") == 0) { strlcpy(bat_st, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(bat_st, "0") == 0) { strlcpy(bat_st, "-", SMALL_BUF_SIZE); }
+	else { /* leave status unchanged */ }
 	if (snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per) < 0) { goto cleanup; }
 
     ret = SUCCESS;
