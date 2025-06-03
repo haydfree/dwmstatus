@@ -35,21 +35,31 @@ get_bat(char * const dst, const size_t len)
     int ret = ERROR;
 	size_t cur_len = 0;
 	char bat_per[SMALL_BUF_SIZE] = {0}, bat_st[SMALL_BUF_SIZE] = {0};
+	char *ptr = dst;
+
+	bat_per[0] = '1';
+	bat_per[1] = '0';
+	bat_per[2] = '0';
+	bat_st[0] = '+';
 
     if (!dst) { goto cleanup; }
     if (len <= 0) { goto cleanup; }
-
-	execute_script("apm -l", bat_per, SMALL_BUF_SIZE);	
+	/* if desktop / no power supply */
+	if (execute_script("ls /sys/class/power_supply", dst, len)) { goto cleanup; }
+	if (*dst == 0) { ret = SUCCESS; goto cleanup; }
+	
+	ZERO_MEM(dst, len);
+	execute_script("/sys/class/power_supply/BAT0/capacity", bat_per, SMALL_BUF_SIZE);	
 	trim_whitespace(bat_per, bat_per, SMALL_BUF_SIZE);
 	cur_len = strlen(bat_per);
 	if (cur_len <= 0 || cur_len+2 >= len) { goto cleanup; }
-	execute_script("apm -a", bat_st, SMALL_BUF_SIZE);
+	execute_script("/sys/class/power_supply/BAT0/status", bat_st, SMALL_BUF_SIZE);
 	trim_whitespace(bat_st, bat_st, SMALL_BUF_SIZE);
 	cur_len += strlen(bat_st);
 	if (cur_len+1 >= len) { goto cleanup; }
 
-	if (strcmp(bat_st, "1") == 0) { strncpy(bat_st, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(bat_st, "0") == 0) { strncpy(bat_st, "-", SMALL_BUF_SIZE); }
+	if (strcmp(bat_st, "Charging") == 0) { strncpy(bat_st, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(bat_st, "Discharging") == 0 || strcmp(bat_st, "Not charging") == 0) { strncpy(bat_st, "-", SMALL_BUF_SIZE); }
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per) < 0) { goto cleanup; }
 
@@ -63,30 +73,18 @@ get_cpu(char * const dst, const size_t len)
 {    
 	int ret = ERROR;
 	size_t cur_len = 0;
-	char cpu[BUF_SIZE] = {0}, temp[SMALL_BUF_SIZE] = {0}, *line = NULL;
+	char cpu[BUF_SIZE] = {0};
 
     if (!dst) { goto cleanup; }
     if (len <= 0) { goto cleanup; }
 
-	execute_script("sysctl hw.sensors", cpu, BUF_SIZE);	
+	execute_script("cat /sys/class/thermal/thermal_zone0/temp", cpu, BUF_SIZE);	
 	trim_whitespace(cpu, cpu, BUF_SIZE);
 	cur_len = strlen(cpu);
 	if (cur_len <= 0) { goto cleanup; }
 
-	line = strtok(cpu, "\n");
-	while (line)
-	{
-		if (strstr(line, "temp0"))
-		{
-			sscanf(line, "hw.sensors.cpu0.temp0=%s", temp);
-		}
-		
-		line = strtok(NULL, "\n");
-	}
-	trim_whitespace(temp, temp, SMALL_BUF_SIZE);
-	if (temp[2] == '.') { temp[2] = '\0'; }
-	else if (temp[3] == '.') { temp[3] = '\0'; }
-	if (snprintf(dst, BUF_SIZE, "%s°C", temp) < 0) { goto cleanup; }
+	cpu[2] = '\0';
+	if (snprintf(dst, BUF_SIZE, "%s°C", cpu) < 0) { goto cleanup; }
 	
     ret = SUCCESS;
 cleanup:
@@ -264,9 +262,9 @@ status_loop(void)
 		if (reset_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
 
 		if (get_net(net, BUF_SIZE)) { goto cleanup; }
-		/*if (get_bat(bat, BUF_SIZE)) { goto cleanup; }
+		if (get_bat(bat, BUF_SIZE)) { goto cleanup; }
 		if (get_cpu(cpu, BUF_SIZE)) { goto cleanup; }
-		if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
+		/*if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
 		if (get_vol(vol, BUF_SIZE)) { goto cleanup; }
 		if (get_time(cur_time, BUF_SIZE)) { goto cleanup; }*/
 		

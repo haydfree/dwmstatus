@@ -34,7 +34,7 @@ typedef double f64;
 typedef int b32;
 typedef char b8;
 
-#define STATIC_ASSERT static_assert
+#define STATIC_ASSERT _Static_assert
 
 STATIC_ASSERT(sizeof(u8) == 1, "expected u8 to be 1 byte\n");
 STATIC_ASSERT(sizeof(u16) == 2, "expected u16 to be 2 bytes\n");

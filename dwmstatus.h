@@ -13,9 +13,8 @@
 #include <sys/wait.h>
 #include <X11/Xlib.h>
 #include "util.h"
+#include "defines.h"
 
-#define SUCCESS 0
-#define ERROR -1
 #define REFRESH_RATE 1
 #define BUF_SIZE 256
 #define SMALL_BUF_SIZE 32
