@@ -46,7 +46,7 @@ get_bat(char * const dst, const size_t len)
     if (len <= 0) { goto cleanup; }
 	/* if desktop / no power supply */
 	if (execute_script("ls /sys/class/power_supply", dst, len)) { goto cleanup; }
-	if (*dst == 0) { ret = SUCCESS; goto cleanup; }
+	if (*dst == 0) { snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per); ret = SUCCESS; goto cleanup; }
 	
 	ZERO_MEM(dst, len);
 	execute_script("/sys/class/power_supply/BAT0/capacity", bat_per, SMALL_BUF_SIZE);	
@@ -96,24 +96,20 @@ get_mem(char * const dst, const size_t len)
 {
 	int ret = ERROR;
 	size_t cur_len = 0;
-	char mem[BUF_SIZE] = {0}, temp[SMALL_BUF_SIZE] = {0}, *found = NULL;
+	char mem_total[BUF_SIZE] = {0}, mem_used[SMALL_BUF_SIZE] = {0}, *temp = NULL;
 
     if (!dst) { goto cleanup; }
     if (len <= 0) { goto cleanup; }
 
-	execute_script("top -dl | grep Memory", mem, BUF_SIZE);
-	trim_whitespace(mem, mem, BUF_SIZE);
-	cur_len = strlen(mem);
+	execute_script("free -m", mem_total, BUF_SIZE);
+	cur_len = strlen(mem_total);
 	if (cur_len <= 0) { goto cleanup; }
 
-	found = strstr(mem, "Real: ");
-	if (found) { found += strlen("Real: "); }
-	sscanf(found, "%s", temp);
-	trim_whitespace(temp, temp, SMALL_BUF_SIZE);
+	temp = strchr(mem_total, '\n')+1;
+	sscanf(temp, "Mem: %s %s", mem_total, mem_used);
 	cur_len = strlen(temp);
 	if (cur_len <= 0 || cur_len+1 >= len) { goto cleanup; }
-
-	if (snprintf(dst, len, "%s", temp) < 0) { goto cleanup; }
+	if (snprintf(dst, len, "%s MiB / %s MiB", mem_used, mem_total) < 0) { goto cleanup; }
 	
     ret = SUCCESS;
 cleanup:
@@ -131,34 +127,16 @@ get_vol(char * const dst, const size_t len)
     if (!dst) { goto cleanup; }
     if (len <= 0) { goto cleanup; }
 
-	execute_script("sndioctl", vol, BUF_SIZE);
-	trim_whitespace(vol, vol, BUF_SIZE);
+	execute_script("pactl get-sink-volume @DEFAULT_SINK@", vol, BUF_SIZE);
+	execute_script("pactl get-sink-mute @DEFAULT_SINK@", mute, BUF_SIZE);
 	cur_len = strlen(vol);
 	if (cur_len <= 0) { goto cleanup; }
-
-	line = strtok(vol, "\n");
-	while (line)
-	{
-		if (strstr(line, "output.level=")) 
-		{ 
-			trim_whitespace(level, line, SMALL_BUF_SIZE); 
-			cur_len = strlen(level);
-			if (cur_len <= 0) { goto cleanup; }
-			sscanf(level, "output.level=%s", level);
-		} else if (strstr(line, "output.mute="))
-		{
-			trim_whitespace(mute, line, SMALL_BUF_SIZE); 
-			cur_len = strlen(mute);
-			if (cur_len <= 0) { goto cleanup; }
-			sscanf(mute, "output.mute=%s", mute);
-		}
-		line = strtok(NULL, "\n");
-	}
+	cur_len = strlen(mute);
+	if (cur_len <= 0) { goto cleanup; }
 	cur_len = strlen(level) + strlen(mute);
 	if (cur_len+1 >= len) { goto cleanup; }
-	lf = strtof(level, &end);
-	if (end - level <= 0) { goto cleanup; }
-	li = (int) (lf * 100);
+
+	sscanf(vol, "", level);
 
 	if (strcmp(mute, "0") == 0) { strncpy(mute, "+", SMALL_BUF_SIZE); }
 	else if (strcmp(mute, "1") == 0) { strncpy(mute, "-", SMALL_BUF_SIZE); }
@@ -264,9 +242,9 @@ status_loop(void)
 		if (get_net(net, BUF_SIZE)) { goto cleanup; }
 		if (get_bat(bat, BUF_SIZE)) { goto cleanup; }
 		if (get_cpu(cpu, BUF_SIZE)) { goto cleanup; }
-		/*if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
+		if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
 		if (get_vol(vol, BUF_SIZE)) { goto cleanup; }
-		if (get_time(cur_time, BUF_SIZE)) { goto cleanup; }*/
+		if (get_time(cur_time, BUF_SIZE)) { goto cleanup; }
 		
 
 		if (create_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
