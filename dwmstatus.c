@@ -13,7 +13,7 @@ get_net(char * const dst, const size_t len)
     if (len <= 0) { goto cleanup; }
 
 		
-	execute_script("nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2", net_id, BUF_SIZE);
+	execute_script("nmcli", net_id, BUF_SIZE);
 	execute_script("nmcli general status", net_st, BUF_SIZE);
 	trim_whitespace(net_id, net_id, BUF_SIZE);
 	trim_whitespace(net_st, net_st, BUF_SIZE);

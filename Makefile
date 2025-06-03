@@ -1,7 +1,7 @@
 TARGET      = dwmstatus
 CC          = clang
-CFLAGS      = -I. -I/usr/X11R6/include -std=c99 -g3 -O0
-LDFLAGS     = -L/usr/X11R6/lib -lX11
+CFLAGS      = -I. -ansi -g3 -O0 -D_POSIX_C_SOURCE=200809L
+LDFLAGS     = -lX11
 
 SRCS        = main.c dwmstatus.c util.c test.c
 OBJS        = ${SRCS:.c=.o}
@@ -22,7 +22,7 @@ clean:
 
 run: ${TARGET}
 	@echo "run"
-	${TARGET}
+	./${TARGET}
 
 commit:
 	@echo "commit"
