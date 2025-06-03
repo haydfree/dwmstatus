@@ -19,10 +19,8 @@ get_net(char * const dst, const size_t len)
 	trim_whitespace(net_st, net_st, SMALL_BUF_SIZE);
 	trim_whitespace(net_id, net_id, SMALL_BUF_SIZE);
 
-	printf("id: %s, st: %s\n", net_id, net_st);
-
-	if (strcmp(net_st, "active") == 0) { strncpy(net_st, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(net_st, "inactive") == 0) { strncpy(net_st, "-", SMALL_BUF_SIZE); }
+	if (strcmp(net_st, "connected") == 0) { strncpy(net_st, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(net_st, "disconnected") == 0) { strncpy(net_st, "-", SMALL_BUF_SIZE); }
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, len, "%s%s", net_st, net_id) < 0) { goto cleanup; }
 
@@ -270,11 +268,11 @@ status_loop(void)
 		if (get_cpu(cpu, BUF_SIZE)) { goto cleanup; }
 		if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
 		if (get_vol(vol, BUF_SIZE)) { goto cleanup; }
-		if (get_time(cur_time, BUF_SIZE)) { goto cleanup; }
+		if (get_time(cur_time, BUF_SIZE)) { goto cleanup; }*/
 		
 
 		if (create_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
-		if (set_status(status, BUF_SIZE)) { goto cleanup; }*/
+		if (set_status(status, BUF_SIZE)) { goto cleanup; }
 	}
 
     ret = SUCCESS;
