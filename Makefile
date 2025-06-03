@@ -6,8 +6,6 @@ LDFLAGS     = -lX11
 SRCS        = main.c dwmstatus.c util.c test.c
 OBJS        = ${SRCS:.c=.o}
 
-all: clean ${TARGET}
-
 ${TARGET}: ${OBJS}
 	@echo "target: objs"
 	${CC} ${OBJS} ${LDFLAGS} -o ${TARGET}
@@ -35,5 +33,5 @@ install: ${TARGET}
 	rm /usr/local/bin/${TARGET}
 	cp ${TARGET} /usr/local/bin/${TARGET}
 
-.PHONY: all clean run commit debug install
+.PHONY: clean run commit debug install
 

@@ -13,16 +13,11 @@ get_net(char * const dst, const size_t len)
     if (len <= 0) { goto cleanup; }
 
 		
-	execute_script("nmcli", net_id, BUF_SIZE);
-	execute_script("nmcli general status", net_st, BUF_SIZE);
-	trim_whitespace(net_id, net_id, BUF_SIZE);
-	trim_whitespace(net_st, net_st, BUF_SIZE);
-	cur_len = strlen(net_st);
-	if (cur_len <= 0) { goto cleanup; }
-	line = strtok(net_st, "\n");
-	sscanf(line, "%s ", net_st);
+	execute_script("nmcli", net, BUF_SIZE);
+	sscanf(net, "wlo1: %s to %s\n", net_st, net_id);
 	if (strlen(net_id) <= 0 || strlen(net_st) <= 0) { goto cleanup; }
 	trim_whitespace(net_st, net_st, SMALL_BUF_SIZE);
+	trim_whitespace(net_id, net_id, SMALL_BUF_SIZE);
 
 	printf("id: %s, st: %s\n", net_id, net_st);
 
