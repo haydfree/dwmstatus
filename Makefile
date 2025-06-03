@@ -28,7 +28,7 @@ commit:
 	@echo "commit"
 	git add .
 	git commit -m "AUTO COMMIT: `date +'%Y-%m-%d %H:%M:%S'`"
-	git push origin main
+	git push origin linux-port
 
 install: ${TARGET}
 	@echo "install"
