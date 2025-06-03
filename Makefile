@@ -1,6 +1,6 @@
 TARGET      = dwmstatus
 CC          = clang
-CFLAGS      = -I. -I/usr/X11R6/include -ansi -g3 -O0
+CFLAGS      = -I. -I/usr/X11R6/include -std=c99 -g3 -O0
 LDFLAGS     = -L/usr/X11R6/lib -lX11
 
 SRCS        = main.c dwmstatus.c util.c test.c

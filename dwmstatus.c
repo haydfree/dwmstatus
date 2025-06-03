@@ -26,8 +26,8 @@ get_net(char * const dst, const size_t len)
 
 	printf("id: %s, st: %s\n", net_id, net_st);
 
-	if (strcmp(net_st, "active") == 0) { strlcpy(net_st, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(net_st, "inactive") == 0) { strlcpy(net_st, "-", SMALL_BUF_SIZE); }
+	if (strcmp(net_st, "active") == 0) { strncpy(net_st, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(net_st, "inactive") == 0) { strncpy(net_st, "-", SMALL_BUF_SIZE); }
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, len, "%s%s", net_st, net_id) < 0) { goto cleanup; }
 
@@ -55,8 +55,8 @@ get_bat(char * const dst, const size_t len)
 	cur_len += strlen(bat_st);
 	if (cur_len+1 >= len) { goto cleanup; }
 
-	if (strcmp(bat_st, "1") == 0) { strlcpy(bat_st, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(bat_st, "0") == 0) { strlcpy(bat_st, "-", SMALL_BUF_SIZE); }
+	if (strcmp(bat_st, "1") == 0) { strncpy(bat_st, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(bat_st, "0") == 0) { strncpy(bat_st, "-", SMALL_BUF_SIZE); }
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per) < 0) { goto cleanup; }
 
@@ -169,8 +169,8 @@ get_vol(char * const dst, const size_t len)
 	if (end - level <= 0) { goto cleanup; }
 	li = (int) (lf * 100);
 
-	if (strcmp(mute, "0") == 0) { strlcpy(mute, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(mute, "1") == 0) { strlcpy(mute, "-", SMALL_BUF_SIZE); }
+	if (strcmp(mute, "0") == 0) { strncpy(mute, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(mute, "1") == 0) { strncpy(mute, "-", SMALL_BUF_SIZE); }
 	if (snprintf(dst, len, "%s%d%%", mute, li) < 0) { goto cleanup; }
 	
     ret = SUCCESS;
