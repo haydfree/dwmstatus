@@ -121,7 +121,7 @@ get_vol(char * const dst, const size_t len)
 {
 	int ret = ERROR, li = 0;
 	size_t cur_len = 0;
-	char vol[BUF_SIZE] = {0}, level[SMALL_BUF_SIZE] = {0}, mute[SMALL_BUF_SIZE] = {0}, *line = NULL, *end = NULL;
+	char vol[BUF_SIZE] = {0}, level[SMALL_BUF_SIZE] = {0}, mute[SMALL_BUF_SIZE] = {0}, *temp = NULL;
 	float lf = 0.0;
 
     if (!dst) { goto cleanup; }
@@ -133,14 +133,20 @@ get_vol(char * const dst, const size_t len)
 	if (cur_len <= 0) { goto cleanup; }
 	cur_len = strlen(mute);
 	if (cur_len <= 0) { goto cleanup; }
-	cur_len = strlen(level) + strlen(mute);
+	cur_len = strlen(vol) + strlen(mute);
 	if (cur_len+1 >= len) { goto cleanup; }
 
-	sscanf(vol, "", level);
+	sscanf(vol, "%*[^/]/ %s%%", vol);
+    sscanf(mute, "%*[^:]: %3s", mute);
+	trim_whitespace(level, vol, SMALL_BUF_SIZE);
+	trim_whitespace(mute, mute, SMALL_BUF_SIZE);
+	temp = strchr(level, '%');
+	GUARD_NULL(temp);
+	*temp = '\0';
 
-	if (strcmp(mute, "0") == 0) { strncpy(mute, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(mute, "1") == 0) { strncpy(mute, "-", SMALL_BUF_SIZE); }
-	if (snprintf(dst, len, "%s%d%%", mute, li) < 0) { goto cleanup; }
+	if (strcmp(mute, "0") == 0 || strcmp(mute, "yes") == 0) { strncpy(mute, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(mute, "1") == 0 || strcmp(mute, "no") == 0) { strncpy(mute, "-", SMALL_BUF_SIZE); }
+	if (snprintf(dst, len, "%s%s%%", mute, level) < 0) { goto cleanup; }
 	
     ret = SUCCESS;
 cleanup:
@@ -245,7 +251,6 @@ status_loop(void)
 		if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
 		if (get_vol(vol, BUF_SIZE)) { goto cleanup; }
 		if (get_time(cur_time, BUF_SIZE)) { goto cleanup; }
-		
 
 		if (create_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
 		if (set_status(status, BUF_SIZE)) { goto cleanup; }
