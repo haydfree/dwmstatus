@@ -5,12 +5,12 @@ static Display *dpy;
 int
 get_net(char * const dst, const size_t len)
 {
-    int ret = ERROR;
+	int ret = ERROR;
 	size_t cur_len = 0;
 	char net[BUF_SIZE] = {0}, net_id[SMALL_BUF_SIZE] = {0}, net_st[SMALL_BUF_SIZE] = {0}, *line = NULL;
 
-    if (!dst) { goto cleanup; }
-    if (len <= 0) { goto cleanup; }
+	if (!dst) { goto cleanup; }
+	if (len <= 0) { goto cleanup; }
 
 	execute_script("ifconfig iwn0", net, BUF_SIZE);
 	trim_whitespace(net, net, BUF_SIZE);
@@ -38,20 +38,20 @@ get_net(char * const dst, const size_t len)
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, len, "%s%s", net_st, net_id) < 0) { goto cleanup; }
 
-    ret = SUCCESS;
+	ret = SUCCESS;
 cleanup:
-    return ret;
+	return ret;
 }
 
 int
 get_bat(char * const dst, const size_t len)
 {
-    int ret = ERROR;
+	int ret = ERROR;
 	size_t cur_len = 0;
 	char bat_per[SMALL_BUF_SIZE] = {0}, bat_st[SMALL_BUF_SIZE] = {0};
 
-    if (!dst) { goto cleanup; }
-    if (len <= 0) { goto cleanup; }
+	if (!dst) { goto cleanup; }
+	if (len <= 0) { goto cleanup; }
 
 	execute_script("apm -l", bat_per, SMALL_BUF_SIZE);	
 	trim_whitespace(bat_per, bat_per, SMALL_BUF_SIZE);
@@ -67,20 +67,20 @@ get_bat(char * const dst, const size_t len)
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per) < 0) { goto cleanup; }
 
-    ret = SUCCESS;
+	ret = SUCCESS;
 cleanup:
-    return ret;
+	return ret;
 }
 
 int
 get_cpu(char * const dst, const size_t len)
-{    
+{	
 	int ret = ERROR;
 	size_t cur_len = 0;
 	char cpu[BUF_SIZE] = {0}, temp[SMALL_BUF_SIZE] = {0}, *line = NULL;
 
-    if (!dst) { goto cleanup; }
-    if (len <= 0) { goto cleanup; }
+	if (!dst) { goto cleanup; }
+	if (len <= 0) { goto cleanup; }
 
 	execute_script("sysctl hw.sensors", cpu, BUF_SIZE);	
 	trim_whitespace(cpu, cpu, BUF_SIZE);
@@ -102,9 +102,9 @@ get_cpu(char * const dst, const size_t len)
 	else if (temp[3] == '.') { temp[3] = '\0'; }
 	if (snprintf(dst, BUF_SIZE, "%s°C", temp) < 0) { goto cleanup; }
 	
-    ret = SUCCESS;
+	ret = SUCCESS;
 cleanup:
-    return ret;
+	return ret;
 }
 
 int
@@ -114,8 +114,8 @@ get_mem(char * const dst, const size_t len)
 	size_t cur_len = 0;
 	char mem[BUF_SIZE] = {0}, temp[SMALL_BUF_SIZE] = {0}, *found = NULL;
 
-    if (!dst) { goto cleanup; }
-    if (len <= 0) { goto cleanup; }
+	if (!dst) { goto cleanup; }
+	if (len <= 0) { goto cleanup; }
 
 	execute_script("top -dl | grep Memory", mem, BUF_SIZE);
 	trim_whitespace(mem, mem, BUF_SIZE);
@@ -131,9 +131,9 @@ get_mem(char * const dst, const size_t len)
 
 	if (snprintf(dst, len, "%s", temp) < 0) { goto cleanup; }
 	
-    ret = SUCCESS;
+	ret = SUCCESS;
 cleanup:
-    return ret;
+	return ret;
 }
 
 int
@@ -144,8 +144,8 @@ get_vol(char * const dst, const size_t len)
 	char vol[BUF_SIZE] = {0}, level[SMALL_BUF_SIZE] = {0}, mute[SMALL_BUF_SIZE] = {0}, *line = NULL, *end = NULL;
 	float lf = 0.0;
 
-    if (!dst) { goto cleanup; }
-    if (len <= 0) { goto cleanup; }
+	if (!dst) { goto cleanup; }
+	if (len <= 0) { goto cleanup; }
 
 	execute_script("sndioctl", vol, BUF_SIZE);
 	trim_whitespace(vol, vol, BUF_SIZE);
@@ -180,9 +180,9 @@ get_vol(char * const dst, const size_t len)
 	else if (strcmp(mute, "1") == 0) { strlcpy(mute, "-", SMALL_BUF_SIZE); }
 	if (snprintf(dst, len, "%s%d%%", mute, li) < 0) { goto cleanup; }
 	
-    ret = SUCCESS;
+	ret = SUCCESS;
 cleanup:
-    return ret;
+	return ret;
 }
 
 int
@@ -194,20 +194,20 @@ get_time(char * const dst, const size_t len)
 	time_t raw_time = 0;
 	struct tm *time_info = {0};
 
-    if (!dst) { goto cleanup; }
-    if (len <= 0) { goto cleanup; }
+	if (!dst) { goto cleanup; }
+	if (len <= 0) { goto cleanup; }
 	
-    time(&raw_time);
-    time_info = localtime(&raw_time);
-    strftime(temp, SMALL_BUF_SIZE, "%a %Y-%m-%d %H:%M:%S", time_info);
+	time(&raw_time);
+	time_info = localtime(&raw_time);
+	strftime(temp, SMALL_BUF_SIZE, "%a %Y-%m-%d %H:%M:%S", time_info);
 	trim_whitespace(temp, temp, SMALL_BUF_SIZE);
 	cur_len = strlen(temp);
 	if (cur_len <= 0 || cur_len+1 >= len) { goto cleanup; }
 	if (snprintf(dst, len, "%s", temp) < 0) { goto cleanup; }
 	
-    ret = SUCCESS;
+	ret = SUCCESS;
 cleanup:
-    return ret;
+	return ret;
 }
 
 static int
@@ -215,7 +215,7 @@ reset_status(char * const dst, const size_t len, char * const net, char * const 
 {
 	int ret = ERROR; 
 
-    if (!dst || !net || !bat || !cpu || !mem || !vol || !time) { goto cleanup; }
+	if (!dst || !net || !bat || !cpu || !mem || !vol || !time) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
 	
 	memset(dst, 0, len);
@@ -226,7 +226,7 @@ reset_status(char * const dst, const size_t len, char * const net, char * const 
 	memset(vol, 0, len);
 	memset(time, 0, len);
 
-    return SUCCESS;
+	return SUCCESS;
 
 cleanup:
 	return ret;
@@ -238,12 +238,12 @@ create_status(char * const dst, const size_t len,
 {
 	int ret = ERROR; 
 
-    if (!dst || !net || !bat || !cpu || !mem || !vol || !time) { goto cleanup; }
+	if (!dst || !net || !bat || !cpu || !mem || !vol || !time) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
 
-    if (snprintf(dst, len, " net: %s | bat: %s | cpu: %s | mem: %s | vol: %s | time: %s ", net, bat, cpu, mem, vol, time) < 0) { goto cleanup; }
+	if (snprintf(dst, len, " net: %s | bat: %s | cpu: %s | mem: %s | vol: %s | time: %s ", net, bat, cpu, mem, vol, time) < 0) { goto cleanup; }
 
-    return SUCCESS;
+	return SUCCESS;
 
 cleanup:
 	return ret;
@@ -252,7 +252,7 @@ cleanup:
 static int
 set_status(const char * const src, const size_t len)
 {
-    int ret = ERROR;
+	int ret = ERROR;
 
 	if (!src) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
@@ -260,22 +260,22 @@ set_status(const char * const src, const size_t len)
 	XStoreName(dpy, DefaultRootWindow(dpy), src);
 	XSync(dpy, False);
 
-    ret = SUCCESS;
+	ret = SUCCESS;
 cleanup:
-    return ret;
+	return ret;
 }
 
 int 
 status_loop(void) 
 {
-    int ret = ERROR;
-    char status[BUF_SIZE] = {0}, net[BUF_SIZE] = {0}, bat[BUF_SIZE] = {0}, cpu[BUF_SIZE] = {0}, mem[BUF_SIZE] = {0}, vol[BUF_SIZE] = {0}, cur_time[BUF_SIZE] = {0}; 
+	int ret = ERROR;
+	char status[BUF_SIZE] = {0}, net[BUF_SIZE] = {0}, bat[BUF_SIZE] = {0}, cpu[BUF_SIZE] = {0}, mem[BUF_SIZE] = {0}, vol[BUF_SIZE] = {0}, cur_time[BUF_SIZE] = {0}; 
 
 	if (!(dpy = XOpenDisplay(NULL))) { goto cleanup; }
 
 
 	for (;;sleep(REFRESH_RATE)) 
-    {
+	{
 		if (reset_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
 
 		if (get_net(net, BUF_SIZE)) { goto cleanup; }
@@ -290,7 +290,7 @@ status_loop(void)
 		if (set_status(status, BUF_SIZE)) { goto cleanup; }
 	}
 
-    ret = SUCCESS;
+	ret = SUCCESS;
 
 cleanup:
 	if (dpy) { XCloseDisplay(dpy); }
