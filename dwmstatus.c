@@ -14,7 +14,7 @@ get_net(char * const dst, const size_t len)
 
 		
 	execute_script("nmcli", net, BUF_SIZE);
-	sscanf(net, "wlo1: %s to %s\n", net_st, net_id);
+	sscanf(net, "wlp3s0: %s to %s\n", net_st, net_id);
 	if (strlen(net_id) <= 0 || strlen(net_st) <= 0) { goto cleanup; }
 	trim_whitespace(net_st, net_st, SMALL_BUF_SIZE);
 	trim_whitespace(net_id, net_id, SMALL_BUF_SIZE);
@@ -48,12 +48,12 @@ get_bat(char * const dst, const size_t len)
 	if (execute_script("ls /sys/class/power_supply", dst, len)) { goto cleanup; }
 	if (*dst == 0) { snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per); ret = SUCCESS; goto cleanup; }
 	
-	ZERO_MEM(dst, len);
-	execute_script("/sys/class/power_supply/BAT0/capacity", bat_per, SMALL_BUF_SIZE);	
+	memset(dst, 0, len);
+	execute_script("cat /sys/class/power_supply/BAT0/capacity", bat_per, SMALL_BUF_SIZE);	
 	trim_whitespace(bat_per, bat_per, SMALL_BUF_SIZE);
 	cur_len = strlen(bat_per);
 	if (cur_len <= 0 || cur_len+2 >= len) { goto cleanup; }
-	execute_script("/sys/class/power_supply/BAT0/status", bat_st, SMALL_BUF_SIZE);
+	execute_script("cat /sys/class/power_supply/BAT0/status", bat_st, SMALL_BUF_SIZE);
 	trim_whitespace(bat_st, bat_st, SMALL_BUF_SIZE);
 	cur_len += strlen(bat_st);
 	if (cur_len+1 >= len) { goto cleanup; }
@@ -109,7 +109,7 @@ get_mem(char * const dst, const size_t len)
 	sscanf(temp, "Mem: %s %s", mem_total, mem_used);
 	cur_len = strlen(temp);
 	if (cur_len <= 0 || cur_len+1 >= len) { goto cleanup; }
-	if (snprintf(dst, len, "%s MiB / %s MiB", mem_used, mem_total) < 0) { goto cleanup; }
+	if (snprintf(dst, len, "%sMiB/%sMiB", mem_used, mem_total) < 0) { goto cleanup; }
 	
     ret = SUCCESS;
 cleanup:
@@ -141,7 +141,6 @@ get_vol(char * const dst, const size_t len)
 	trim_whitespace(level, vol, SMALL_BUF_SIZE);
 	trim_whitespace(mute, mute, SMALL_BUF_SIZE);
 	temp = strchr(level, '%');
-	GUARD_NULL(temp);
 	*temp = '\0';
 
 	if (strcmp(mute, "0") == 0 || strcmp(mute, "yes") == 0) { strncpy(mute, "+", SMALL_BUF_SIZE); }
@@ -257,7 +256,6 @@ status_loop(void)
 	}
 
     ret = SUCCESS;
-
 cleanup:
 	if (dpy) { XCloseDisplay(dpy); }
 	return ret;

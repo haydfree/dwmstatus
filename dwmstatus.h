@@ -13,7 +13,6 @@
 #include <sys/wait.h>
 #include <X11/Xlib.h>
 #include "util.h"
-#include "defines.h"
 
 #define REFRESH_RATE 1
 #define BUF_SIZE 256
