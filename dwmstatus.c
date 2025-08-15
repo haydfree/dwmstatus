@@ -58,7 +58,7 @@ get_bat(char * const dst, const size_t len)
 	cur_len += strlen(bat_st);
 	if (cur_len+1 >= len) { goto cleanup; }
 
-	if (strcmp(bat_st, "Charging") == 0) { strncpy(bat_st, "+", SMALL_BUF_SIZE); }
+	if (strcmp(bat_st, "Charging") == 0 || strcmp(bat_st, "Full"==0)) { strncpy(bat_st, "+", SMALL_BUF_SIZE); }
 	else if (strcmp(bat_st, "Discharging") == 0 || strcmp(bat_st, "Not charging") == 0) { strncpy(bat_st, "-", SMALL_BUF_SIZE); }
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per) < 0) { goto cleanup; }
