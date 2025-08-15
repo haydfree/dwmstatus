@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 TARGET		= dwmstatus
 CC		= gcc
 CFLAGS		= -I. -I/usr/X11R6/include -g3 -O0 -std=c99 -Wall -Werror -Wextra -pedantic
@@ -24,3 +25,21 @@ commit:
 
 install: ${TARGET}
 	cp ${TARGET} /usr/local/bin/${TARGET}
+=======
+TARGET      	= dwmstatus
+CC          	= gcc
+CFLAGS      	= -g3 -O0 
+LDFLAGS     	= 
+LIBS		= -lX11
+SRCS        = main.c dwmstatus.c util.c
+
+${TARGET}: ${SRCS}
+	${CC} ${CFLAGS} ${LDFLAGS} ${SRCS} ${LIBS} -o ${TARGET}
+
+run: ${TARGET}
+	./${TARGET}
+
+install: ${TARGET}
+	cp ${TARGET} /usr/local/bin/${TARGET}
+
+>>>>>>> linux-port

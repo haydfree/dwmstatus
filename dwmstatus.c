@@ -13,6 +13,7 @@ get_net(char * const dst, const size_t len)
 	if (len <= 0) { goto cleanup; }
 
 		
+<<<<<<< HEAD
 	execute_script("nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2", net_id, BUF_SIZE);
 	execute_script("nmcli general status", net_st, BUF_SIZE);
 	trim_whitespace(net_id, net_id, BUF_SIZE);
@@ -21,13 +22,23 @@ get_net(char * const dst, const size_t len)
 	if (cur_len <= 0) { goto cleanup; }
 	line = strtok(net_st, "\n");
 	sscanf(line, "%s ", net_st);
+=======
+	execute_script("nmcli", net, BUF_SIZE);
+	sscanf(net, "wlp3s0: %s to %s\n", net_st, net_id);
+>>>>>>> linux-port
 	if (strlen(net_id) <= 0 || strlen(net_st) <= 0) { goto cleanup; }
 	trim_whitespace(net_st, net_st, SMALL_BUF_SIZE);
+	trim_whitespace(net_id, net_id, SMALL_BUF_SIZE);
 
+<<<<<<< HEAD
 	printf("id: %s, st: %s\n", net_id, net_st);
 
 	if (strcmp(net_st, "active") == 0) { strlcpy(net_st, "+", SMALL_BUF_SIZE); }
 	else if (strcmp(net_st, "inactive") == 0) { strlcpy(net_st, "-", SMALL_BUF_SIZE); }
+=======
+	if (strcmp(net_st, "connected") == 0) { strncpy(net_st, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(net_st, "disconnected") == 0) { strncpy(net_st, "-", SMALL_BUF_SIZE); }
+>>>>>>> linux-port
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, len, "%s%s", net_st, net_id) < 0) { goto cleanup; }
 
@@ -42,21 +53,36 @@ get_bat(char * const dst, const size_t len)
 	int ret = ERROR;
 	size_t cur_len = 0;
 	char bat_per[SMALL_BUF_SIZE] = {0}, bat_st[SMALL_BUF_SIZE] = {0};
+	char *ptr = dst;
+
+<<<<<<< HEAD
+	if (!dst) { goto cleanup; }
+	if (len <= 0) { goto cleanup; }
+=======
+	bat_per[0] = '1';
+	bat_per[1] = '0';
+	bat_per[2] = '0';
+	bat_st[0] = '+';
+>>>>>>> linux-port
 
 	if (!dst) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
-
-	execute_script("apm -l", bat_per, SMALL_BUF_SIZE);	
+	/* if desktop / no power supply */
+	if (execute_script("ls /sys/class/power_supply", dst, len)) { goto cleanup; }
+	if (*dst == 0) { snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per); ret = SUCCESS; goto cleanup; }
+	
+	memset(dst, 0, len);
+	execute_script("cat /sys/class/power_supply/BAT0/capacity", bat_per, SMALL_BUF_SIZE);	
 	trim_whitespace(bat_per, bat_per, SMALL_BUF_SIZE);
 	cur_len = strlen(bat_per);
 	if (cur_len <= 0 || cur_len+2 >= len) { goto cleanup; }
-	execute_script("apm -a", bat_st, SMALL_BUF_SIZE);
+	execute_script("cat /sys/class/power_supply/BAT0/status", bat_st, SMALL_BUF_SIZE);
 	trim_whitespace(bat_st, bat_st, SMALL_BUF_SIZE);
 	cur_len += strlen(bat_st);
 	if (cur_len+1 >= len) { goto cleanup; }
 
-	if (strcmp(bat_st, "1") == 0) { strlcpy(bat_st, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(bat_st, "0") == 0) { strlcpy(bat_st, "-", SMALL_BUF_SIZE); }
+	if (strcmp(bat_st, "Charging") == 0 || strcmp(bat_st, "Full"==0)) { strncpy(bat_st, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(bat_st, "Discharging") == 0 || strcmp(bat_st, "Not charging") == 0) { strncpy(bat_st, "-", SMALL_BUF_SIZE); }
 	else { /* leave status unchanged */ }
 	if (snprintf(dst, BUF_SIZE, "%s%s%%", bat_st, bat_per) < 0) { goto cleanup; }
 
@@ -70,30 +96,18 @@ get_cpu(char * const dst, const size_t len)
 {	
 	int ret = ERROR;
 	size_t cur_len = 0;
-	char cpu[BUF_SIZE] = {0}, temp[SMALL_BUF_SIZE] = {0}, *line = NULL;
+	char cpu[BUF_SIZE] = {0};
 
 	if (!dst) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
 
-	execute_script("sysctl hw.sensors", cpu, BUF_SIZE);	
+	execute_script("cat /sys/class/thermal/thermal_zone0/temp", cpu, BUF_SIZE);	
 	trim_whitespace(cpu, cpu, BUF_SIZE);
 	cur_len = strlen(cpu);
 	if (cur_len <= 0) { goto cleanup; }
 
-	line = strtok(cpu, "\n");
-	while (line)
-	{
-		if (strstr(line, "temp0"))
-		{
-			sscanf(line, "hw.sensors.cpu0.temp0=%s", temp);
-		}
-		
-		line = strtok(NULL, "\n");
-	}
-	trim_whitespace(temp, temp, SMALL_BUF_SIZE);
-	if (temp[2] == '.') { temp[2] = '\0'; }
-	else if (temp[3] == '.') { temp[3] = '\0'; }
-	if (snprintf(dst, BUF_SIZE, "%s°C", temp) < 0) { goto cleanup; }
+	cpu[2] = '\0';
+	if (snprintf(dst, BUF_SIZE, "%s°C", cpu) < 0) { goto cleanup; }
 	
 	ret = SUCCESS;
 cleanup:
@@ -105,24 +119,20 @@ get_mem(char * const dst, const size_t len)
 {
 	int ret = ERROR;
 	size_t cur_len = 0;
-	char mem[BUF_SIZE] = {0}, temp[SMALL_BUF_SIZE] = {0}, *found = NULL;
+	char mem_total[BUF_SIZE] = {0}, mem_used[SMALL_BUF_SIZE] = {0}, *temp = NULL;
 
 	if (!dst) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
 
-	execute_script("top -dl | grep Memory", mem, BUF_SIZE);
-	trim_whitespace(mem, mem, BUF_SIZE);
-	cur_len = strlen(mem);
+	execute_script("free -m", mem_total, BUF_SIZE);
+	cur_len = strlen(mem_total);
 	if (cur_len <= 0) { goto cleanup; }
 
-	found = strstr(mem, "Real: ");
-	if (found) { found += strlen("Real: "); }
-	sscanf(found, "%s", temp);
-	trim_whitespace(temp, temp, SMALL_BUF_SIZE);
+	temp = strchr(mem_total, '\n')+1;
+	sscanf(temp, "Mem: %s %s", mem_total, mem_used);
 	cur_len = strlen(temp);
 	if (cur_len <= 0 || cur_len+1 >= len) { goto cleanup; }
-
-	if (snprintf(dst, len, "%s", temp) < 0) { goto cleanup; }
+	if (snprintf(dst, len, "%sMiB/%sMiB", mem_used, mem_total) < 0) { goto cleanup; }
 	
 	ret = SUCCESS;
 cleanup:
@@ -134,44 +144,31 @@ get_vol(char * const dst, const size_t len)
 {
 	int ret = ERROR, li = 0;
 	size_t cur_len = 0;
-	char vol[BUF_SIZE] = {0}, level[SMALL_BUF_SIZE] = {0}, mute[SMALL_BUF_SIZE] = {0}, *line = NULL, *end = NULL;
+	char vol[BUF_SIZE] = {0}, level[SMALL_BUF_SIZE] = {0}, mute[SMALL_BUF_SIZE] = {0}, *temp = NULL;
 	float lf = 0.0;
 
 	if (!dst) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
 
-	execute_script("sndioctl", vol, BUF_SIZE);
-	trim_whitespace(vol, vol, BUF_SIZE);
+	execute_script("pactl get-sink-volume @DEFAULT_SINK@", vol, BUF_SIZE);
+	execute_script("pactl get-sink-mute @DEFAULT_SINK@", mute, BUF_SIZE);
 	cur_len = strlen(vol);
 	if (cur_len <= 0) { goto cleanup; }
-
-	line = strtok(vol, "\n");
-	while (line)
-	{
-		if (strstr(line, "output.level=")) 
-		{ 
-			trim_whitespace(level, line, SMALL_BUF_SIZE); 
-			cur_len = strlen(level);
-			if (cur_len <= 0) { goto cleanup; }
-			sscanf(level, "output.level=%s", level);
-		} else if (strstr(line, "output.mute="))
-		{
-			trim_whitespace(mute, line, SMALL_BUF_SIZE); 
-			cur_len = strlen(mute);
-			if (cur_len <= 0) { goto cleanup; }
-			sscanf(mute, "output.mute=%s", mute);
-		}
-		line = strtok(NULL, "\n");
-	}
-	cur_len = strlen(level) + strlen(mute);
+	cur_len = strlen(mute);
+	if (cur_len <= 0) { goto cleanup; }
+	cur_len = strlen(vol) + strlen(mute);
 	if (cur_len+1 >= len) { goto cleanup; }
-	lf = strtof(level, &end);
-	if (end - level <= 0) { goto cleanup; }
-	li = (int) (lf * 100);
 
-	if (strcmp(mute, "0") == 0) { strlcpy(mute, "+", SMALL_BUF_SIZE); }
-	else if (strcmp(mute, "1") == 0) { strlcpy(mute, "-", SMALL_BUF_SIZE); }
-	if (snprintf(dst, len, "%s%d%%", mute, li) < 0) { goto cleanup; }
+	sscanf(vol, "%*[^/]/ %s%%", vol);
+	sscanf(mute, "%*[^:]: %3s", mute);
+	trim_whitespace(level, vol, SMALL_BUF_SIZE);
+	trim_whitespace(mute, mute, SMALL_BUF_SIZE);
+	temp = strchr(level, '%');
+	*temp = '\0';
+
+	if (strcmp(mute, "0") == 0 || strcmp(mute, "yes") == 0) { strncpy(mute, "+", SMALL_BUF_SIZE); }
+	else if (strcmp(mute, "1") == 0 || strcmp(mute, "no") == 0) { strncpy(mute, "-", SMALL_BUF_SIZE); }
+	if (snprintf(dst, len, "%s%s%%", mute, level) < 0) { goto cleanup; }
 	
 	ret = SUCCESS;
 cleanup:
@@ -276,14 +273,16 @@ status_loop(void)
 		if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
 		if (get_vol(vol, BUF_SIZE)) { goto cleanup; }
 		if (get_time(cur_time, BUF_SIZE)) { goto cleanup; }
-		
 
 		if (create_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
 		if (set_status(status, BUF_SIZE)) { goto cleanup; }
 	}
 
 	ret = SUCCESS;
+<<<<<<< HEAD
 
+=======
+>>>>>>> linux-port
 cleanup:
 	if (dpy) { XCloseDisplay(dpy); }
 	return ret;
