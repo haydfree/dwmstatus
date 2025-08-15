@@ -12,26 +12,19 @@ get_net(char * const dst, const size_t len)
 	if (!dst) { goto cleanup; }
 	if (len <= 0) { goto cleanup; }
 
-	execute_script("ifconfig iwn0", net, BUF_SIZE);
-	trim_whitespace(net, net, BUF_SIZE);
-	cur_len = strlen(net);
-	if (cur_len <= 0) { goto cleanup; }
-	line = strtok(net, "\n");
-	while (line)
-	{
-		if (strstr(line, "nwid"))
-		{
-			sscanf(line, " ieee80211: nwid %s", net_id);
-		} else if (strstr(line, "status"))
-		{
-			sscanf(line, " status: %s", net_st);
-		}
 		
-		line = strtok(NULL, "\n");
-	}
+	execute_script("nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2", net_id, BUF_SIZE);
+	execute_script("nmcli general status", net_st, BUF_SIZE);
+	trim_whitespace(net_id, net_id, BUF_SIZE);
+	trim_whitespace(net_st, net_st, BUF_SIZE);
+	cur_len = strlen(net_st);
+	if (cur_len <= 0) { goto cleanup; }
+	line = strtok(net_st, "\n");
+	sscanf(line, "%s ", net_st);
 	if (strlen(net_id) <= 0 || strlen(net_st) <= 0) { goto cleanup; }
-	trim_whitespace(net_id, net_id, SMALL_BUF_SIZE);
 	trim_whitespace(net_st, net_st, SMALL_BUF_SIZE);
+
+	printf("id: %s, st: %s\n", net_id, net_st);
 
 	if (strcmp(net_st, "active") == 0) { strlcpy(net_st, "+", SMALL_BUF_SIZE); }
 	else if (strcmp(net_st, "inactive") == 0) { strlcpy(net_st, "-", SMALL_BUF_SIZE); }
@@ -273,13 +266,12 @@ status_loop(void)
 
 	if (!(dpy = XOpenDisplay(NULL))) { goto cleanup; }
 
-
 	for (;;sleep(REFRESH_RATE)) 
 	{
 		if (reset_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
 
 		if (get_net(net, BUF_SIZE)) { goto cleanup; }
-		if (get_bat(bat, BUF_SIZE)) { goto cleanup; }
+		/*if (get_bat(bat, BUF_SIZE)) { goto cleanup; }
 		if (get_cpu(cpu, BUF_SIZE)) { goto cleanup; }
 		if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
 		if (get_vol(vol, BUF_SIZE)) { goto cleanup; }
@@ -287,7 +279,7 @@ status_loop(void)
 		
 
 		if (create_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
-		if (set_status(status, BUF_SIZE)) { goto cleanup; }
+		if (set_status(status, BUF_SIZE)) { goto cleanup; }*/
 	}
 
 	ret = SUCCESS;
