@@ -9,7 +9,18 @@ ${TARGET}: ${SRCS}
 	${CC} ${CFLAGS} ${LDFLAGS} ${SRCS} ${LIBS} -o $@
 
 run: ${TARGET}
+<<<<<<< HEAD
 	./${TARGET}
+=======
+	@echo "run"
+	${TARGET}
+
+commit:
+	@echo "commit"
+	git add .
+	git commit -m "AUTO COMMIT: `date +'%Y-%m-%d %H:%M:%S'`"
+	git push origin linux-port
+>>>>>>> ca0d8a8 (AUTO COMMIT: 2025-06-03 16:17:54)
 
 install: ${TARGET}
 	cp ${TARGET} /usr/local/bin/${TARGET}

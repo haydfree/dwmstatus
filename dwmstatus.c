@@ -271,7 +271,7 @@ status_loop(void)
 		if (reset_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
 
 		if (get_net(net, BUF_SIZE)) { goto cleanup; }
-		/*if (get_bat(bat, BUF_SIZE)) { goto cleanup; }
+		if (get_bat(bat, BUF_SIZE)) { goto cleanup; }
 		if (get_cpu(cpu, BUF_SIZE)) { goto cleanup; }
 		if (get_mem(mem, BUF_SIZE)) { goto cleanup; }
 		if (get_vol(vol, BUF_SIZE)) { goto cleanup; }
@@ -279,7 +279,7 @@ status_loop(void)
 		
 
 		if (create_status(status, BUF_SIZE, net, bat, cpu, mem, vol, cur_time)) { goto cleanup; }	
-		if (set_status(status, BUF_SIZE)) { goto cleanup; }*/
+		if (set_status(status, BUF_SIZE)) { goto cleanup; }
 	}
 
 	ret = SUCCESS;
