@@ -130,6 +130,7 @@ int get_vol(char *vol) {
     FILE *fp = popen(
         "pactl get-sink-volume @DEFAULT_SINK@ | awk '{print $5}'", "r");
     fgets(level, BUFSIZE, fp);
+    pclose(fp);
     fp = popen("pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}'", "r");
     fgets(status, BUFSIZE, fp);
     if (!strncmp(status, "no", 2))
