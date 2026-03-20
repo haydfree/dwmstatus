@@ -123,6 +123,29 @@ cleanup:
     return ret;
 }
 
+int get_vol(char *vol) {
+    int ret = -1;
+
+    char status[BUFSIZE], level[BUFSIZE];
+    FILE *fp = popen(
+        "pactl get-sink-volume @DEFAULT_SINK@ | awk '{print $5}'", "r");
+    fgets(level, BUFSIZE, fp);
+    fp = popen("pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}'", "r");
+    fgets(status, BUFSIZE, fp);
+    if (!strncmp(status, "no", 2))
+        strncpy(status, "+", BUFSIZE);
+    else
+        strncpy(status, "-", BUFSIZE);
+    snprintf(vol, BUFSIZE, "%s%s", status, level);
+    vol[strcspn(vol, "\n")] = '\0';
+
+    ret = 0;
+cleanup:
+    if (fp)
+        pclose(fp);
+    return ret;
+}
+
 int main(int argc, char **argv) {
     int ret = -1;
 
@@ -176,10 +199,16 @@ int main(int argc, char **argv) {
             goto cleanup;
         }
 
+        char vol[BUFSIZE];
+        if (get_vol(vol)) {
+            fprintf(stderr, "main: cannot get vol.\n");
+            goto cleanup;
+        }
+
         char status[BUFSIZE*10];
         snprintf(status, BUFSIZE*10,
-            " net: %s | bat: %s | dsk: %s | mem: %s | tmp: %sC | %s ", net, bat,
-            dsk, ram, tmp, date);
+            " vol: %s | net: %s | bat: %s | dsk: %s | mem: %s | tmp: %sC | %s ",
+            vol, net, bat, dsk, ram, tmp, date);
         XStoreName(dpy, DefaultRootWindow(dpy), status);
         XSync(dpy, False);
         sleep(1);
